@@ -1,8 +1,9 @@
 const express = require('express');
 const Accounts = require('./data/dbConfig.js');
 const router = express.Router();
+const {isValidQuery, validateAccount, validateAccountID} = require('./MIddleWare.js');
 
-router.get('/', (req, res) => {
+router.get('/', isValidQuery, (req, res) => {
     // Retrieve a list of all accounts in database
     // SELECT * FROM Accounts
     Accounts
@@ -20,6 +21,7 @@ router.get('/', (req, res) => {
             })
         })
 })
+
 
 router.get('/:id', validateAccountID, (req, res) => {
     // Retrieve an individual account based on ID
@@ -116,42 +118,6 @@ router.delete('/:id', validateAccountID, (req, res) => {
         })
 })
 
-// Middleware
-function validateAccountID(req, res, next){
-    Accounts('accounts')
-        .where({id: req.params.id})
-        .first()
-        .then(account => {
-            if(account){
-                next();
-            } else {
-                res.status(404).json({
-                    errorMessage: "no account with that ID found"
-                })
-            }
-        })
-        .catch(error => {
-            res.status(500).json({
-                errorMessage: "Error Retrieving Account(s)",
-                error: error
-            })
-        })
-}
 
-function validateAccount(req, res, next){
-    const name = req.body.name;
-    const budget = req.body.budget;
-    if(!name || typeof name === String){
-        res.status(400).json({
-            errorMessage: "Please provide a name"
-        })
-    } else if (!budget || typeof budget === Number){
-        res.status(400).json({
-            errorMessage: "Please provide a numberical budget"
-        })
-    }else{
-        next();
-    }
-    }
 
 module.exports = router;
