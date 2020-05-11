@@ -11,5 +11,5 @@ if(process.env.NODE_ENV === 'development'){
 }
 
 server.listen(PORT, () => {
-  console.log(`\n== Marc's API is running in ${process.env.NODE_ENV}mode on http://localhost:${PORT} ==\n`.cyan.bold.underline);
+  console.log(`\n== Marc's API is running in ${process.env.NODE_ENV} mode on http://localhost:${PORT} ==\n`.cyan.bold.underline);
 });
