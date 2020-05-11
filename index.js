@@ -7,7 +7,7 @@ const server = require("./api/server.js");
 const PORT = process.env.PORT;
 
 if(process.env.NODE_ENV === 'development'){
-  server.use(morgan('dev'))
+  server.use(morgan('dev'));
 }
 
 server.listen(PORT, () => {
