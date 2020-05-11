@@ -21,22 +21,16 @@ router.get('/', (req, res) => {
         })
 })
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateAccountID, (req, res) => {
     // Retrieve an individual account based on ID
     // SELECT * FROM Accounts WHERE ID = req.params.id
     Accounts('accounts')
         .where({id: req.params.id})
         .first()
         .then(account => {
-            if(account){
-                res.status(200).json({
-                    data: account
-                })
-            } else {
-                res.status(404).json({
-                    errorMessage: "No account found with that ID"
-                })
-            }
+            res.status(200).json({
+                data: account
+            })
         })
         .catch(error => {
             res.status(500).json({
@@ -46,7 +40,7 @@ router.get('/:id', (req, res) => {
         })
 })
 
-router.post('/', (req, res) => {
+router.post('/', validateAccount, (req, res) => {
     // add a new account
     // INSERT INTO Accounts (account, 'id')
     const account = req.body;
@@ -69,10 +63,82 @@ router.post('/', (req, res) => {
         })
 })
 
+router.put('/:id', validateAccountID, validateAccount, (req, res) => {
+    const account = req.body
+    Accounts('accounts')
+        .where({id: req.params.id})
+        .update({
+            name: account.name,
+            budget: account.budget
+        }, 'id')
+        .then(count => {
+            if(count > 0){
+                res.status(200).json({
+                    recordsUpdated: count,
+                    statusMessage: "record updated successfully"
+                })
+            } else {
+                res.status(500).json({
+                    errorMessage: "Could not update account"
+                })
+            }
+        })
+        .catch(error => {
+            res.status(500).json({
+                errorMessage: "Error occured updating record",
+                error: error
+            })
+        })
+})
+
+router.delete('/:id', validateAccountID, (req, res) => {
+    Accounts('accounts')
+        .where({id: req.params.id})
+        .first()
+        .del()
+        .then(count => {
+            if(count > 0){
+                res.status(200).json({
+                    deletedCount: count,
+                    statusMessage: "Account deleted Successfully"
+                })
+            } else {
+                res.status(500).json({
+                    errorMessage: "Error deleting account"
+                })
+            }
+        })
+        .catch(error => {
+            res.status(500).json({
+                errorMessage: "Error deleting account",
+                error: error
+            })
+        })
+})
 
 // Middleware
+function validateAccountID(req, res, next){
+    Accounts('accounts')
+        .where({id: req.params.id})
+        .first()
+        .then(account => {
+            if(account){
+                next();
+            } else {
+                res.status(404).json({
+                    errorMessage: "no account with that ID found"
+                })
+            }
+        })
+        .catch(error => {
+            res.status(500).json({
+                errorMessage: "Error Retrieving Account(s)",
+                error: error
+            })
+        })
+}
 
-function validateNewAccount(req, res, next){
+function validateAccount(req, res, next){
     const name = req.body.name;
     const budget = req.body.budget;
     if(!name || typeof name === String){
